@@ -6,7 +6,7 @@
 /*   By: akumari <akumari@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/22 11:39:49 by akumari           #+#    #+#             */
-/*   Updated: 2024/11/26 13:54:25 by akumari          ###   ########.fr       */
+/*   Updated: 2024/11/27 12:29:31 by akumari          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,24 +14,13 @@
 file descriptor*/
 #include "get_next_line.h"
 
-static char	*error_check(char const *s1, char const *s2)
-{
-	if (!s1 && !s2)
-		return (ft_strdup(""));
-	else if (!s1)
-		return (ft_strdup(s2));
-	else if (!s2)
-		return (ft_strdup(s1));
-	return (NULL);
-}
-
 char	*ft_strjoin(char const *s1, char const *s2)
 {
 	char	*new_str;
 	size_t	i;
 	size_t	j;
 
-	new_str = error_check(s1, s2);
+	new_str = NULL;
 	if (new_str)
 		return (new_str);
 	new_str = (char *)malloc(ft_strlen(s1) + ft_strlen(s2) + 1);
@@ -92,4 +81,33 @@ char	*ft_strchr(const char *s, int c)
 	if (c == '\0')
 		return ((char *)s);
 	return (NULL);
+}
+
+char	*ft_substr(const char *s, unsigned int start, size_t len)
+{
+	char			*new_str;
+	unsigned int	s_len;
+	size_t			substr_len;
+	size_t			i;
+
+	if (!s)
+		return (NULL);
+	s_len = ft_strlen(s);
+	if (start >= s_len)
+		return (ft_strdup(""));
+	if (len < s_len - start)
+		substr_len = len;
+	else
+		substr_len = s_len - start;
+	new_str = (char *)malloc(substr_len + 1);
+	if (!new_str)
+		return (NULL);
+	i = 0;
+	while (i < substr_len)
+	{
+		new_str[i] = s[i + start];
+		i++;
+	}
+	new_str[i] = '\0';
+	return (new_str);
 }
