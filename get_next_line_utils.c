@@ -6,7 +6,7 @@
 /*   By: akumari <akumari@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/11/22 11:39:49 by akumari           #+#    #+#             */
-/*   Updated: 2024/11/27 12:29:31 by akumari          ###   ########.fr       */
+/*   Updated: 2024/12/11 11:26:13 by akumari          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,25 +20,23 @@ char	*ft_strjoin(char const *s1, char const *s2)
 	size_t	i;
 	size_t	j;
 
-	new_str = NULL;
-	if (new_str)
-		return (new_str);
+	if (!s1 && !s2)
+		return (NULL);
+	else if (!s1)
+		return (ft_strdup(s2));
+	else if (!s2)
+		return (ft_strdup(s1));
 	new_str = (char *)malloc(ft_strlen(s1) + ft_strlen(s2) + 1);
 	if (!new_str)
 		return (NULL);
 	i = 0;
-	while (s1[i])
-	{
-		new_str[i] = s1[i];
-		i++;
-	}
 	j = 0;
-	while (s2[j])
-	{
-		new_str[i + j] = s2[j];
-		j++;
-	}
-	new_str[i + j] = '\0';
+	while (i < ft_strlen(s1))
+		new_str[j++] = s1[i++];
+	i = 0;
+	while (i < ft_strlen(s2))
+		new_str[j++] = s2[i++];
+	new_str[j] = '\0';
 	return (new_str);
 }
 
@@ -58,10 +56,10 @@ char	*ft_strdup(const char *src)
 	size_t	i;
 
 	cpy_str = (char *)malloc(ft_strlen(src) + 1);
-	if (cpy_str == NULL)
+	if (!cpy_str)
 		return (NULL);
 	i = 0;
-	while (src[i] != '\0')
+	while (i < ft_strlen(src))
 	{
 		cpy_str[i] = src[i];
 		i++;
