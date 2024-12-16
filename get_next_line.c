@@ -5,168 +5,89 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: akumari <akumari@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/22 11:43:41 by akumari           #+#    #+#             */
-/*   Updated: 2024/12/11 15:52:31 by akumari          ###   ########.fr       */
+/*   Created: 2024/12/12 10:26:23 by akumari           #+#    #+#             */
+/*   Updated: 2024/12/12 15:22:09 by akumari          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-static char	*ft_error(char *str)
+char	*extract_line_and_update(char **stat_var_ptr, char *line, int i)
 {
-	if (str == NULL)
-		return (NULL);
-    return (str);
-}
+	char	*stat_var;
+	char	*temp;
 
-/*
-This function extracts a single line from the temp buffer.
-
-Parameters:
-temp: Pointer to the static buffer holding the file content.
-i: Index used to locate the newline character (\n).
-line: The extracted line.
-temp_new: Temporary pointer for buffer manipulation.
-
-Logic:
-Iterates through temp to find the newline character (\n) or the end of the string (\0).
-If a newline character is found:
-    Extracts the line from the start of temp to the newline (including the newline) using ft_substr.
-    Updates temp to contain the remaining content after the newline using ft_strdup.
-    Handles memory cleanup for the old temp and ensures no dangling pointer exists.
-If no newline character is found:
-    Copies the entire temp into line using ft_strdup.
-    Frees temp and sets it to NULL (indicating all content has been read).
-Returns the extracted line.
-*/
-
-static char	*extract_line(char **temp, int i, char *line, char *temp_new)
-{
-	while ((*temp)[i] != '\n' && (*temp)[i] != '\0')
+	stat_var = *stat_var_ptr;
+	while (stat_var[i] != '\n' && stat_var[i] != '\0')
 		i++;
-	if ((*temp)[i] == '\n')
+	if (stat_var[i] == '\n')
 	{
-		line = ft_substr(*temp, 0, i + 1);
-		ft_error(line);
-		temp_new = *temp;
-		*temp = ft_strdup(temp_new + i + 1);
-        if (!*temp)
-			return (free(temp_new), free(line), NULL);
-		free(temp_new);
-		if ((*temp)[0] == '\0')
-		{
-			free(*temp);
-			*temp = NULL;
-		}
+		line = ft_substr(stat_var, 0, i + 1);
+		if (!line)
+			return (free(stat_var), NULL);
+		temp = ft_strdup(stat_var + i + 1);
+		if (!temp)
+			return (free(line), NULL);
+		free(stat_var);
+		*stat_var_ptr = temp;
 	}
 	else
 	{
-		line = ft_strdup(*temp);
-		free(*temp);
-		*temp = NULL;
+		line = ft_strdup(stat_var);
+		free(stat_var);
+		*stat_var_ptr = NULL;
 	}
 	return (line);
 }
 
-/*
-Reads data from the file descriptor (fd) into the temp buffer until a newline is found or the end of the file is reached.
-
-Parameters:
-fd: File descriptor for reading.
-buffer: Temporary buffer to read file content in chunks.
-temp: Static buffer holding accumulated content.
-
-Logic:
-Uses a loop to repeatedly read from fd into buffer with a size defined by BUFFER_SIZE.
-If data is successfully read (bytes_read > 0):
-    Appends the content of buffer to temp using ft_strjoin.
-    Updates newline_ptr to check if the newly read content contains a newline character.
-Handles errors:
-    If bytes_read == -1, an error occurred; frees temp and returns NULL.
-    If bytes_read == 0 and temp is empty, it indicates the end of the file; frees temp.
-Returns the updated temp containing the accumulated data.
-*/
-
-static char	*read_line(int fd, char *buffer, char *temp)
+char	*read_and_concat(int fd, char *buffer, char *stat_var)
 {
-	int		bytes_read;
-	char	*temp_new;
-	char	*newline_ptr;
+	int		read_line;
+	char	*new;
 
-	bytes_read = 1;
-	newline_ptr = ft_strchr(temp, '\n');
-	while (newline_ptr == NULL && bytes_read > 0)
+	read_line = 1;
+	while (read_line > 0)
 	{
-		bytes_read = read(fd, buffer, BUFFER_SIZE);
-		if (bytes_read <= 0)
+		read_line = read(fd, buffer, BUFFER_SIZE);
+		if (read_line <= 0)
 			break ;
-		buffer[bytes_read] = '\0';
-		temp_new = temp;
-		temp = ft_strjoin(temp, buffer);
-		if (!temp)
-			return (free(temp_new), NULL);
-		free(temp_new);
-		newline_ptr = ft_strchr(temp, '\n');
+		buffer[read_line] = '\0';
+		new = stat_var;
+		stat_var = ft_strjoin(new, buffer);
+		if (!stat_var)
+			return (free(new), NULL);
+		free(new);
+		if (ft_strchr(stat_var, '\n'))
+			break ;
 	}
-	if (bytes_read == -1 || (bytes_read == 0 && temp && temp[0] == '\0'))
-		return (free(temp), NULL);
-	return (temp);
+	if (read_line == -1 || (read_line == 0 && stat_var && stat_var[0] == '\0'))
+		return (free(stat_var), NULL);
+	return (stat_var);
 }
-
-/*
-The main function that orchestrates reading a single line from a file descriptor.
-Logic:
-Validates the file descriptor and BUFFER_SIZE. Returns NULL if invalid.
-Allocates memory for the buffer used for reading.
-Initializes the temp buffer if it's the first call (temp == NULL).
-Calls read_line to populate temp with file content.
-Calls extract_line to extract the next line from temp.
-Frees resources and handles errors appropriately.
-Returns the extracted line.
-*/
 
 char	*get_next_line(int fd)
 {
-	static char	*temp;
 	char		*buffer;
+	static char	*stat_var;
 	char		*line;
 
 	if (fd < 0 || BUFFER_SIZE <= 0)
-        return (NULL);
+		return (NULL);
 	buffer = (char *)malloc((BUFFER_SIZE + 1) * sizeof(char));
 	if (!buffer)
-		return (NULL);       
-	if (!temp)
-	{
-		temp = ft_strdup("");
-		ft_error(temp);  
-	}
-	temp = read_line(fd, buffer, temp);
-	free(buffer);
-	if (!temp)
 		return (NULL);
-	line = extract_line(&temp, 0, NULL, NULL);
-	if (!line && temp)
+	if (!stat_var)
 	{
-		free(temp); 
-		temp = NULL;
+		stat_var = ft_strdup("");
+		if (!stat_var)
+			return (free(buffer), NULL);
 	}
+	stat_var = read_and_concat(fd, buffer, stat_var);
+	free(buffer);
+	if (!stat_var || stat_var[0] == '\0')
+		return (free(stat_var), stat_var = NULL, NULL);
+	line = extract_line_and_update(&stat_var, NULL, 0);
+	if (!line && stat_var)
+		return (free(stat_var), stat_var = NULL, NULL);
 	return (line);
-}
-
-int	main(void)
-{
-	int		fd;
-	char	*line;
-
-	fd = open("test.txt", O_RDONLY);
-	if (fd == -1)
-		return (1);
-	while((line = get_next_line(fd)) != NULL)
-    {
-        	printf("%s\n", line);
-	        free(line); 
-    }
-	close(fd);
-	return (0);
 }

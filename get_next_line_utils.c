@@ -5,13 +5,11 @@
 /*                                                    +:+ +:+         +:+     */
 /*   By: akumari <akumari@student.hive.fi>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2024/11/22 11:39:49 by akumari           #+#    #+#             */
-/*   Updated: 2024/12/11 11:26:13 by akumari          ###   ########.fr       */
+/*   Created: 2024/12/12 12:21:41 by akumari           #+#    #+#             */
+/*   Updated: 2024/12/12 14:27:10 by akumari          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-/*Write a function that returns a line read from a
-file descriptor*/
 #include "get_next_line.h"
 
 char	*ft_strjoin(char const *s1, char const *s2)
